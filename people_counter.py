@@ -13,9 +13,9 @@ import dlib
 import cv2
 
 # class label initalisation
-CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
 # load model
-model = cv2.dnn.readNetFromCaffe("mobilenet_ssd\MobileNetSSD_deploy.prototxt", "mobilenet_ssd\MobileNetSSD_deploy.caffemodel")
+model = cv2.dnn.readNetFromCaffe('mobilenet_ssd\MobileNetSSD_deploy.prototxt', 'mobilenet_ssd\MobileNetSSD_deploy.caffemodel')
 # initialise video stream
 vs = cv2.VideoCapture(0)
 
@@ -66,7 +66,7 @@ while True:
                 redetected = False
 				# only accept people class
                 idx = int(detections[0, 0, i, 1])
-                if CLASSES[idx] != "person":
+                if CLASSES[idx] =! 'person':
                     continue
 				# compute the bounding box
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
