@@ -64,7 +64,7 @@ while True:
                 redetected = False
 				# only accept people class
                 idx = int(detections[0, 0, i, 1])
-                if CLASSES[idx] =! 'person':
+                if CLASSES[idx] != 'person':
                     continue
 				# compute the bounding box
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
