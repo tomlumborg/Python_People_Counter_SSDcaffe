@@ -141,6 +141,10 @@ while True:
 			# draw the bounding box and label
             cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
             cv2.putText(frame, str(objectID), (startX, startY - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 2)
+            # create blur in bounding box
+            blur_region = frame[startY:endY, startX:endX]
+            blur = cv2.GaussianBlur(blur_region, (51,51), 0)
+            frame[startY:endY, startX:endX] = blur
 	# show dividing line in middle
     cv2.line(frame, (320, 0), (320, 480), (0, 255, 0), 4)
     # show count in corner
