@@ -1,11 +1,9 @@
-"""
-ENGR 300 - People detection and tracking
-
-Created December 6 2019
-Last updated March 30 2020
-
-Author Thomas Lumborg
-"""
+'''
+Author: Thomas Lumborg
+Project: ENGR 300 - People Counter
+Created: December 6 2019
+Last Updated: 15 April 2020
+'''
 
 # module import
 import numpy as np
