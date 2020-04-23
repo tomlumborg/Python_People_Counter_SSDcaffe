@@ -1,29 +1,27 @@
-'''
-Author: Thomas Lumborg
-Project: ENGR 300 - People Counter
-Created: December 6 2019
-Last Updated: 15 April 2020
-'''
+"""
+ENGR 300 - People detection and tracking
+
+Created December 6 2019
+Last updated March 30 2020
+
+Author Thomas Lumborg
+"""
 
 # module import
 import numpy as np
 import dlib
 import cv2
 
-# class label initalisation
-CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
-# load model
-model = cv2.dnn.readNetFromCaffe('mobilenet_ssd\MobileNetSSD_deploy.prototxt', 'mobilenet_ssd\MobileNetSSD_deploy.caffemodel')
-# initialise video stream
+# initalisation
+CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+model = cv2.dnn.readNetFromCaffe("mobilenet_ssd\MobileNetSSD_deploy.prototxt", "mobilenet_ssd\MobileNetSSD_deploy.caffemodel")
 vs = cv2.VideoCapture(0)
-
-# initialise lists and ints
 frames_between_detection = 30
 counter = 0
 timer = 0
 currentID = 0
 redetected = 0
-
+trackable_objects = {}
 class trackableobject:
     def get_bbox(self):
         return self.bbox
@@ -33,7 +31,6 @@ class trackableobject:
         self.counted = False    
         self.detected = True
         self.tracker = tracker
-trackable_objects = {}
 
 # loop over frames from the video file stream
 while True:
@@ -64,7 +61,7 @@ while True:
                 redetected = False
 				# only accept people class
                 idx = int(detections[0, 0, i, 1])
-                if CLASSES[idx] != 'person':
+                if CLASSES[idx] != "person":
                     continue
 				# compute the bounding box
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
@@ -95,60 +92,55 @@ while True:
                             trackable_objects[currentID] = trackableobject(currentID, bbox, t)
                             break
                 trackable_objects[currentID].detected = True
-                # draw the bounding box and ID
-                cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
-                cv2.putText(frame, str(currentID), (startX, startY - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 2)
-	# tracking and counting system
-    else:
-        # delete objects
+                # delete undetected objects
         for objectID in trackable_objects:
             if trackable_objects[objectID].detected == False:
                 del trackable_objects[objectID]
                 break
-		# loop over each of the objects
-        for objectID in trackable_objects:
-			# update the tracker and grab the position of the object
-            t = trackable_objects[objectID].tracker
-            t.update(rgb)
-            pos = t.get_position()
-			# unpack the position object
-            startX = int(pos.left())
-            startY = int(pos.top())
-            endX = int(pos.right())
-            endY = int(pos.bottom())
-            # find new centroid
-            cent_x = startX + (endX-startX)/2
-            cent_y = startY + (endY-startY)/2
-            # find old centroid
-            bbox_ = trackable_objects[objectID].get_bbox()
-            cent_x_ = int(bbox_[0]) + (int(bbox_[2]))/2
-            cent_y_ = int(bbox_[1]) + (int(bbox_[3]))/2
-            # update dictionary
-            trackable_objects[objectID].bbox = (startX, startY, abs(startX-endX), abs(startY-endY))
-            # COUNTING
-            # check if already counted and time after last detection phase
-            if trackable_objects[objectID].counted == False:
-                # check if moving right
-                if cent_x_ < cent_x:
-                    trackable_objects[objectID].counted = True
-                    counter = counter + 1
-                # check if moving left
-                if cent_x_ > cent_x:
-                    trackable_objects[objectID].counted = True
-                    counter = counter - 1
-                    if counter < 0:
-                        counter = 0
-			# draw the bounding box and label
-            cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
-            cv2.putText(frame, str(objectID), (startX, startY - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 2)
-            # create blur in bounding box
-            blur_region = frame[startY:endY, startX:endX]
-            blur = cv2.GaussianBlur(blur_region, (51,51), 0)
-            frame[startY:endY, startX:endX] = blur
-	# show dividing line in middle
-    cv2.line(frame, (320, 0), (320, 480), (0, 255, 0), 4)
-    # show count in corner
-    cv2.putText(frame, 'Count = {}'.format(counter), (5, 475), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1)
+	# tracking
+    for objectID in trackable_objects:
+		# update the tracker and grab the position of the object
+        t = trackable_objects[objectID].tracker
+        t.update(rgb)
+        pos = t.get_position()
+		# unpack the position object
+        startX = int(pos.left())
+        startY = int(pos.top())
+        endX = int(pos.right())
+        endY = int(pos.bottom())
+        # find new centroid
+        cent_x = startX + (endX-startX)/2
+        cent_y = startY + (endY-startY)/2
+        # find old centroid
+        bbox_ = trackable_objects[objectID].get_bbox()
+        cent_x_ = int(bbox_[0]) + (int(bbox_[2]))/2
+        cent_y_ = int(bbox_[1]) + (int(bbox_[3]))/2
+        # update dictionary
+        trackable_objects[objectID].bbox = (startX, startY, abs(startX-endX), abs(startY-endY))
+        # COUNTING
+        # check if already counted and time after last detection phase
+        if trackable_objects[objectID].counted == False:
+            # check if moving right
+            if cent_x_ < cent_x:
+                trackable_objects[objectID].counted = True
+                counter = counter + 1
+            # check if moving left
+            if cent_x_ > cent_x:
+                trackable_objects[objectID].counted = True
+                counter = counter - 1
+                if counter < 0:
+                    counter = 0
+        # make coords positive
+        startX = max(0, startX)
+        startY = max(0, startY)
+        # display everything
+        cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+        cv2.putText(frame, 'ID: {}'.format(str(objectID)), (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 2)
+        blur_region = frame[startY:endY, startX:endX]
+        blur = cv2.GaussianBlur(blur_region, (51,51), 0)       
+        frame[startY:endY, startX:endX] = blur
+    # show count
+    cv2.putText(frame, 'Count = {}'.format(counter), (5, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1)
     # show the output frame
     cv2.imshow("Frame", frame)
 	# if the esc key was pressed, break from the loop
