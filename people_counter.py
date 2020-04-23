@@ -1,29 +1,27 @@
-'''
-Author: Thomas Lumborg
-Project: ENGR 300 - People Counter
-Created: December 6 2019
-Last Updated: 15 April 2020
-'''
+"""
+ENGR 300 - People detection and tracking
+
+Created December 6 2019
+Last updated March 30 2020
+
+Author Thomas Lumborg
+"""
 
 # module import
 import numpy as np
 import dlib
 import cv2
 
-# class label initalisation
-CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
-# load model
-model = cv2.dnn.readNetFromCaffe('mobilenet_ssd\MobileNetSSD_deploy.prototxt', 'mobilenet_ssd\MobileNetSSD_deploy.caffemodel')
-# initialise video stream
+# initalisation
+CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+model = cv2.dnn.readNetFromCaffe("mobilenet_ssd\MobileNetSSD_deploy.prototxt", "mobilenet_ssd\MobileNetSSD_deploy.caffemodel")
 vs = cv2.VideoCapture(0)
-
-# initialise lists and ints
 frames_between_detection = 30
 counter = 0
 timer = 0
 currentID = 0
 redetected = 0
-
+trackable_objects = {}
 class trackableobject:
     def get_bbox(self):
         return self.bbox
@@ -33,7 +31,6 @@ class trackableobject:
         self.counted = False    
         self.detected = True
         self.tracker = tracker
-trackable_objects = {}
 
 # loop over frames from the video file stream
 while True:
